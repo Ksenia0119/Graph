@@ -66,12 +66,109 @@ WeightedGraph<int>* CreateGraphWithEdges() {
 
     // Добавляем ребра с весами
     graph->addEdge(0, 1, 10);
+   
     graph->addEdge(1, 2, 5);
     graph->addEdge(2, 3, 8);
     graph->addEdge(3, 4, 3);
 
     return graph;
 
+}
+//Создание тестового дерева
+WeightedGraph<int>* CreateGraphWithEdges1() {
+    WeightedGraph<int>* graph = new WeightedGraph<int>(6);
+    graph->addVertex(0);  // Вершина 0
+    graph->addVertex(1);  // Вершина 1
+    graph->addVertex(2);  // Вершина 2
+    graph->addVertex(3);  // Вершина 3
+    graph->addVertex(4);  // Вершина 4
+    graph->addVertex(5);  // Вершина 5
+
+    // Добавляем ребра с весами
+    graph->addEdge(0, 1, 10);
+    graph->addEdge(0, 2, -1);
+    graph->addEdge(1, 2, 5);
+    graph->addEdge(2, 3, 7);
+    graph->addEdge(3, 4, 2);
+    graph->addEdge(4, 5, -3);
+    graph->addEdge(4, 0, 4);
+    graph->addEdge(4, 1, 2);
+
+    return graph;
+
+}
+
+//Тестирование обхода в ширину
+void testBreadthFirst() {
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph = CreateGraphWithEdges();
+    graph->addEdge(1, 0, 11);
+    //получаем вектор на основе обхода
+    vector<int> actual = graph->BreadthFirst(1);
+    //ожидаемый результат
+    vector<int> expected = { 1, 0, 2, 3, 4 };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual == expected);
+
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph1 = CreateGraphWithEdges();
+    //получаем вектор на основе обхода
+    vector<int> actual1 = graph1->BreadthFirst(0);
+    //ожидаемый результат
+    vector<int> expected1 = { 0,1, 2, 3, 4 };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual1 == expected1);
+
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph2 = CreateGraphWithEdges1();
+    //получаем вектор на основе обхода
+    vector<int> actual2 = graph2->BreadthFirst(0);
+    //ожидаемый результат
+    vector<int> expected2 = { 0,1,2, 3, 4,5 };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual2 == expected2);
+
+   
+    cout << "Тест обход в ширину пройден" << endl;
+
+    delete graph;
+    delete graph1;
+    delete graph2;
+}
+//Тестирование обхода в глубину 
+void testDephtFirst() {
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph = CreateGraphWithEdges();
+    graph->addEdge(1, 0, 11);
+    //получаем вектор на основе обхода
+    vector<int> actual = graph->DepthFirst(1);
+    //ожидаемый результат
+    vector<int> expected = { 1, 2, 3, 4,0};
+    //сравниваем ожидаемый результат с действительным
+    assert(actual == expected);
+
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph1 = CreateGraphWithEdges();
+    //получаем вектор на основе обхода
+    vector<int> actual1 = graph1->DepthFirst(0);
+    //ожидаемый результат
+    vector<int> expected1 = { 0,1, 2, 3, 4 };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual1 == expected1);
+
+    //создаем граф с ребрами
+    WeightedGraph<int>* graph2 = CreateGraphWithEdges1();
+    //получаем вектор на основе обхода
+    vector<int> actual2 = graph2->DepthFirst(0);
+    //ожидаемый результат
+    vector<int> expected2 = { 0,2, 3, 4,5 ,1};
+    //сравниваем ожидаемый результат с действительным
+    assert(actual2 == expected2);
+    cout << "Тест обход в глубину пройден" << endl; 
+
+    delete graph;
+    delete graph1;
+    delete graph2;
 }
 
 //Тестирование добавления ребра
