@@ -6,6 +6,8 @@
 #include<stack>
 #include<queue>
 #include <iomanip>
+#include <string>
+#include <fstream>
 using namespace std;
 
 //взвешанный ориентированный граф
@@ -256,11 +258,17 @@ public:
                 }
             }
         }
-      //  cout << endl;
+        // Выводим результат обхода
+        for (int i = 0; i < SaveVertices.size(); i++) {
+            cout << SaveVertices[i] << " ";
+        }
+        cout << endl;
+      
         //возвращаем вектор на основе обхода
+       
         return SaveVertices;
     }
-    //Обход в ширину на основе кучи
+    //Обход в ширину на основе очереди
     vector<T> BreadthFirst(const T& startNode) {
         //вектор контейнер посещенных вершин, изначально все false,т.к не посещены
         vector<bool> visitedVertices(numVertices, false);
@@ -272,7 +280,7 @@ public:
         visitedVertices[startNode] = true;
         //вектор для записи результата обхода
         vector<int> SaveVertices;
-        //пока куча не пуста
+        //пока очередь не пуста
         while (!nodeQueue.empty()) {
             //вытаскиваем вершину
             int currentNode = nodeQueue.front();
@@ -284,14 +292,19 @@ public:
             for (int i = 0; i < numVertices; i++) {
                 // Если есть ребро между текущей вершиной и вершиной i, и вершина i еще не посещена
                 if (adjacencyMatrix[currentNode][i] && !visitedVertices[i]) {
-                    //добавляем вершину в кучу
+                    //добавляем вершину в очередь
                     nodeQueue.push(i);
                     //помечаем вершину как посещенную
                     visitedVertices[i] = true;
                 }
             }
         }
-        //cout << endl;
+        // Выводим результат обхода
+        for (int i = 0; i < SaveVertices.size(); i++) {
+            cout << SaveVertices[i] << " ";
+        }
+        cout << endl;
+
         //возвращаем вектор на основе обхода
         return  SaveVertices;
     }
@@ -322,21 +335,25 @@ public:
             // Начальная вершина не найдена
             return;
         }
-
+        
         // Расстояние от начальной вершины до нее самой равно 0
-        distance[startIndex] = 0; 
+        distance[startIndex] = 0;
       
         //выполняем нужное количество итераций, пока узел достижим и не посещен
         while (startIndex != -1) {
             // Для соседних вершин сравниваем предварительное и заданное расстояние
             for (int i = 0; i < numVertices; i++) {
                 //получаем вес ребра между текущей вершиной и соседней i
-                int weight = getWeight(startIndex,i);
+                int weight = getWeight(startIndex,i);  
+                //проверка на возможность применения алгоритма Деикстры
+               if(weight<0) throw invalid_argument("Обнаружен отрицательный вес в графе");
                 //если вес не равен 0 и вершина не посещена и новый путь через текущую вершину короче текущего расстояния до вершины i
                 if (weight != 0 && !visited[i] && (weight + distance[startIndex] < distance[i])) {
                   //расстояние обновляется на новую длину пути
                     distance[i] = weight + distance[startIndex];
-                }
+                } 
+                  
+                
             }
 
             // Отмечаем текущую вершину как "посещенную" и выбираем следующую
@@ -366,8 +383,79 @@ public:
             }
         }
     }
+    //todo
+    void bellmanFordAlgorithm(const T& startNode) {
+        int startIndex = findVertexIndex(startNode);
+        if (startIndex == -1) {
+            std::cout << "Ошибка: Вершина " << startNode << " не найдена" << std::endl;
+            return;
+        }
 
-// https://medium.com/nuances-of-programming/%D0%B3%D1%80%D0%B0%D1%84%D1%8B-%D0%B8-%D0%BF%D1%83%D1%82%D0%B8-%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC-%D0%B4%D0%B5%D0%B9%D0%BA%D1%81%D1%82%D1%80%D1%8B-fa0b404c3a85
+        vector<int> distance(numVertices, std::numeric_limits<int>::max());
+        distance[startIndex] = 0;
+
+        
+
+      
+        for (int i = 0; i < numVertices; i++) {
+            std::cout << "Кратчайшее расстояние от вершины " << startNode << " до вершины "
+                << vertices[i] << ": ";
+            if (distance[i] == std::numeric_limits<int>::max()) {
+                std::cout << "нет пути" << std::endl;
+            }
+            else {
+                std::cout << distance[i] << std::endl;
+            }
+        }
+    }
+
+    //запись в фаил формата GraphML
+    void WriteToFile(const string& filename)
+    { //поток для записи в фаил
+        ofstream file(filename);
+        //если фаил не открылся
+        if (!file.is_open())
+        {//генерируем исключение
+            throw "Ошибка открытия файла";
+        }
+        // Записываем заголовок XML
+        file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << '\n';
+        file << R"(<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">)" << '\n';
+
+        // Записываем граф
+        //ориентированный
+        file << R"(<graph id="G" edgedefault="directed">)" << '\n';
+        //для ребер ключ -атрибут вес типа вещественного
+        file << R"(<key id="weight" for="edge" attr.name="weight" attr.type="double"/>)" << '\n';
+        // Получаем вектор вершин
+        vector<T> vertices = getVertices();
+
+        // Записываем вершины
+        for (int i = 0; i < vertices.size(); i++)
+        {
+            file << R"(<node id="n)" << i << R"("/>)" << '\n';
+        }
+        // Записываем ребра
+        for (int i = 0; i < numVertices; i++)
+        {
+            for (int j = 0; j < numVertices; j++)
+            {
+                if (adjacencyMatrix[i][j] != 0)
+                {
+                    file << R"(<edge source="n)" << i << R"(" target="n)" << j << R"(">)" << '\n';
+                    file << R"(<data key="weight">)" << adjacencyMatrix[i][j] << R"(</data>)" << '\n';
+                    file << R"(</edge>)" << '\n';
+                }
+            }
+        }
+
+        // Закрываем теги и файл
+        file << R"(</graph>)" << '\n';
+        file << R"(</graphml>)" << '\n';
+        file.close();
+    }
+
+    
     //деструктор
     ~WeightedGraph() {
         // Освобождаем память, выделенную для массива вершин
@@ -379,4 +467,6 @@ public:
         }
         delete[] adjacencyMatrix;
     }
+
+
 };

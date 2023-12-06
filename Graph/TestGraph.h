@@ -317,3 +317,13 @@ void testNumEdges() {
     delete graph1;
     delete graph2;
 }
+
+void testDijkstrasAlgorithm(){
+    WeightedGraph<int>* graph = CreateGraphWithEdges();
+    int startNode = 0;
+
+    graph->dijkstrasAlgorithm(0);
+   
+    // Освобождение памяти, выделенной для графа
+    delete graph;
+}
