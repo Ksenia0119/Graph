@@ -10,6 +10,7 @@
 #include <fstream>
 using namespace std;
 
+
 //взвешанный ориентированный граф
 template <class T>
 class WeightedGraph {
@@ -19,7 +20,7 @@ private:
     //int* vertices; // Массив вершин графа 
 
     vector<T> vertices;  // Вектор вершин графа
-    int** adjacencyMatrix; // Матрица смежности
+    double** adjacencyMatrix; // Матрица смежности
 public:
    
     // Конструктор с параметром (максимальный размер графа)
@@ -34,15 +35,73 @@ public:
         //}
 
         // Выделяем память для матрицы смежности и инициализируем значениями 0,так как изначально матрица пуста
-        adjacencyMatrix = new int* [maxVertices];
+        adjacencyMatrix = new double* [maxVertices];
         for (int i = 0; i < maxVertices; i++) {
-            adjacencyMatrix[i] = new int[maxVertices];
+            adjacencyMatrix[i] = new double[maxVertices];
             for (int j = 0; j < maxVertices; j++) {
                 adjacencyMatrix[i][j] = 0;
             }
         }
     }
+
+    // Конструктор копирования 
+    WeightedGraph(const WeightedGraph& other) {
+        maxVertices = other.maxVertices;
+        numVertices = other.numVertices;
+
+        // Копируем вершины
+        vertices = other.vertices;
+
+        // Выделяем память для новой матрицы смежности и копируем значения
+        adjacencyMatrix = new double* [maxVertices];
+        for (int i = 0; i < maxVertices; i++) {
+            adjacencyMatrix[i] = new double[maxVertices];
+            memcpy(adjacencyMatrix[i], other.adjacencyMatrix[i], maxVertices * sizeof(double));
+        }
+    }
+
+    // Оператор присваивания копирования
+    WeightedGraph<T>& operator=(const WeightedGraph<T>& other) {
+        //избегаем самоприсваивания
+        if (this != &other) {
+            // Освобождаем ресурсы текущего объекта
+            for (int i = 0; i < numVertices; i++) {
+                delete[] adjacencyMatrix[i];
+            }
+            delete[] adjacencyMatrix;
+
+            // Копируем значения из другого объекта
+            maxVertices = other.maxVertices;
+            numVertices = other.numVertices;
+            vertices = other.vertices;
+
+            // Выделяем память для новой матрицы смежности и копируем значения
+            adjacencyMatrix = new double* [maxVertices];
+            for (int i = 0; i < maxVertices; i++) {
+                adjacencyMatrix[i] = new double[maxVertices];
+                memcpy(adjacencyMatrix[i], other.adjacencyMatrix[i], maxVertices * sizeof(double));
+            }
+        }
+        return *this;
+    }
     
+    // Конструктор перемещения
+    WeightedGraph(WeightedGraph&& other)
+        : numVertices(other.numVertices), adjacencyMatrix(move(other.adjacencyMatrix))
+    {
+        other.numVertices = 0;
+    }
+    // Оператор присваивания перемещения
+    WeightedGraph& operator=(WeightedGraph&& other) {
+        //избегаем самоприсваивания
+        if (this != &other) {
+            numVertices = other.numVertices;
+            adjacencyMatrix = move(other.adjacencyMatrix);
+            
+            other.numVertices = 0;
+        }
+        return *this;
+    }
     //добавление вершины
     void addVertex(const char& vertex) {
         if (numVertices >= maxVertices) {
@@ -50,9 +109,9 @@ public:
             int newMaxVertices = maxVertices * 2;
 
             // Создаем новую матрицу смежности с увеличенным размером
-            int** newAdjacencyMatrix = new int* [newMaxVertices];
+            double** newAdjacencyMatrix = new double* [newMaxVertices];
             for (int i = 0; i < newMaxVertices; i++) {
-                newAdjacencyMatrix[i] = new int[newMaxVertices];
+                newAdjacencyMatrix[i] = new double[newMaxVertices];
             }
 
             // Копируем значения из старой матрицы смежности в новую 
@@ -324,7 +383,7 @@ public:
     }
     //Алгоритм Дейкстры
     //поиск кратчайшего пути от начальной вершины startNode до всех остальных вершин в графе
-    void dijkstrasAlgorithm(const T& startNode) {
+    vector<T> dijkstrasAlgorithm(const T& startNode) {
         //присваиваем следующие значения: расстояние = "бесконечность", посещено = "не посещено"//
         vector<int> distance(numVertices, numeric_limits<int>::max()); // Расстояния от начальной вершины до остальных
         vector<bool> visited(numVertices, false); // Посещенные вершины
@@ -333,7 +392,7 @@ public:
         int startIndex = findVertexIndex(startNode);
         if (startIndex == -1) {
             // Начальная вершина не найдена
-            return;
+            throw invalid_argument("Неправильный индекс");
         }
         
         // Расстояние от начальной вершины до нее самой равно 0
@@ -382,6 +441,8 @@ public:
                 cout << distance[i] << endl;
             }
         }
+
+        return distance;
     }
     //todo
     void bellmanFordAlgorithm(const T& startNode) {
@@ -418,6 +479,7 @@ public:
         {//генерируем исключение
             throw "Ошибка открытия файла";
         }
+        //можно было сделать большой константой, при записи с файла искать слово вес...
         // Записываем заголовок XML
         file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << '\n';
         file << R"(<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">)" << '\n';
@@ -456,7 +518,7 @@ public:
     }
 
     
-    //деструктор
+    ////деструктор
     ~WeightedGraph() {
         // Освобождаем память, выделенную для массива вершин
       //  delete[] vertices;

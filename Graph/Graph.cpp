@@ -20,13 +20,13 @@ int main() {
     graph.addEdge(1, 0, 6);
     graph.addEdge(0, 2, 4);
     graph.addEdge(1, 3, 1);
-    graph.addEdge(2, 3, 3);
+    graph.addEdge(2, 3, 3.6);
 
     graph.addVertex(4);
-    graph.addEdge(4, 4, 9);
+    graph.addEdge(4, 4, 9.7);
     cout << "Результат обхода в глубину:" << endl;
     graph.DepthFirst(0);
-    cout << "Обход графа в ширину " << endl;
+    cout << "Обход графа в ширину:" << endl;
     graph.BreadthFirst(0);
     graph.printGraph();
     graph.WriteToFile("graph.graphml");
@@ -34,7 +34,9 @@ int main() {
    // graph.removeEdge(0, 4);
  //   graph.removeVertex(2);
  //   graph.printGraph();
-   graph.dijkstrasAlgorithm(0);
+    int startNode = 1;
+    
+   graph.dijkstrasAlgorithm(startNode);
   // graph.bellmanFordAlgorithm(0);
     graph.printGraph();
     }
@@ -45,17 +47,22 @@ int main() {
 
 
 
-    //cout << "Тесты" << endl;
-    //testAddVertex();
-    //testAddEdge();
-    //testRemoveEdge();
-    //testGetWeight();
-    //testRemoveVertex();
-    //testGetNumVertices();
-    //testNumEdges();
-    //testBreadthFirst();
-    //testDephtFirst();
-   
+    cout << "Тесты" << endl;
+    testAddVertex();
+    testAddEdge();
+    testRemoveEdge();
+    testGetWeight();
+    testRemoveVertex();
+    testGetNumVertices();
+    testNumEdges();
+    testBreadthFirst();
+    testDephtFirst();
+    testDijkstrasAlgorithm();
+    testCopyConstructor();
+    testCopyOperator();
+    testMoveConstructor();
+    //testMoveOperator();
+    
 
     return 0;
 }

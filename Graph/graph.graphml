@@ -20,10 +20,10 @@
 <data key="weight">1</data>
 </edge>
 <edge source="n2" target="n3">
-<data key="weight">3</data>
+<data key="weight">3.6</data>
 </edge>
 <edge source="n4" target="n4">
-<data key="weight">9</data>
+<data key="weight">9.7</data>
 </edge>
 </graph>
 </graphml>

@@ -74,6 +74,8 @@ WeightedGraph<int>* CreateGraphWithEdges() {
     return graph;
 
 }
+
+
 //Создание тестового дерева
 WeightedGraph<int>* CreateGraphWithEdges1() {
     WeightedGraph<int>* graph = new WeightedGraph<int>(6);
@@ -98,6 +100,25 @@ WeightedGraph<int>* CreateGraphWithEdges1() {
 
 }
 
+//Создание тестового дерева
+WeightedGraph<int>* CreateGraphWithEdges2() {
+    WeightedGraph<int>* graph = new WeightedGraph<int>(6);
+    graph->addVertex(0);
+    graph->addVertex(1);
+    graph->addVertex(2);
+    graph->addVertex(3);
+    // Добавляем ребра с весами
+    graph->addEdge(0, 1, 2);
+    graph->addEdge(1, 0, 6);
+    graph->addEdge(0, 2, 4);
+    graph->addEdge(1, 3, 1);
+    graph->addEdge(2, 3, 3);
+
+    graph->addVertex(4);
+    graph->addEdge(4, 4, 9);
+
+    return graph;
+}
 //Тестирование обхода в ширину
 void testBreadthFirst() {
     //создаем граф с ребрами
@@ -317,13 +338,132 @@ void testNumEdges() {
     delete graph1;
     delete graph2;
 }
+// Тестирование конструктора копирования графа
+void testCopyConstructor() {
+    // Создаем граф с ребрами
+    WeightedGraph<int>*  graph = CreateGraphWithEdges();
+    assert(graph->getNumVertices() == 6);
+    // Копирование графа
+    WeightedGraph<int>* graph2 = new WeightedGraph<int>(*graph);
+    assert(graph2->getNumVertices() == 6);
 
+    // Сравнение матрицы смежности
+    for (int i = 0; i < graph->getNumVertices(); i++) {
+        for (int j = 0; j < graph->getNumVertices(); j++) {
+            assert(graph->getWeight(i, j) == graph2->getWeight(i, j));
+        }
+    }
+    // Изменяем графы, проверяем что бы изменения не влияли друг на друга
+    graph2->removeVertex(3);
+    graph->addVertex(6);
+    assert(graph->getNumVertices() == 7);
+   assert(graph2->getNumVertices() == 5);
+
+   cout << "Тест конструктора копирования  пройден" << endl;
+   delete graph;
+   delete graph2;
+}
+//Тестирование оператора присваивания копирования
+void testCopyOperator() {
+    // Создаем граф с ребрами
+    WeightedGraph<int>* graph = CreateGraphWithEdges();
+    assert(graph->getNumVertices() == 6);
+    // Копирование графа через оператор присваивания копирования
+    WeightedGraph<int>* graph2 = new WeightedGraph<int>(10);
+    *graph2 = *graph;
+    assert(graph2->getNumVertices() == 6);
+    // Сравнение матрицы смежности
+    for (int i = 0; i < graph->getNumVertices(); i++) {
+        for (int j = 0; j < graph->getNumVertices(); j++) {
+            assert(graph->getWeight(i, j) == graph2->getWeight(i, j));
+        }
+    }
+    // Изменяем графы, проверяем что бы изменения не влияли друг на друга
+    graph2->removeVertex(3);
+    graph->addVertex(6);
+    assert(graph->getNumVertices() == 7);
+    assert(graph2->getNumVertices() == 5);
+
+    cout << "Тест оператора присваивания копирования  пройден" << endl;
+    delete graph;
+    delete graph2;
+
+
+}
+//Тестирование конструктора перемещения
+void testMoveConstructor() {
+    // Создаем граф с ребрами
+    WeightedGraph<int>* graph = CreateGraphWithEdges();
+
+    // Конструктор перемещения
+    WeightedGraph<int> graph2(move(*graph));
+
+    // Проверяем, что ресурсы были перемещены и исходный граф пуст
+    assert(graph2.getNumVertices() == 6);
+    assert(graph->getNumVertices() == 0);
+
+
+    cout << "Тест конструктора перемещения  пройден" << endl;
+   
+}
+//Тестирование оператора перемещения
+void testMoveOperator() {
+    //Создаем пустой граф
+    WeightedGraph<int> graph(5);
+
+    // Добавляем вершины
+    graph.addVertex(10);
+    graph.addVertex(12);
+    graph.addVertex(21);
+    // Перемещаем ресурсы
+    WeightedGraph<int> graph2 = move(graph);
+
+    // Проверяем, что ресурсы были перемещены и исходный граф пуст
+    assert(graph2.getNumVertices() == 3);
+    assert(graph.getNumVertices() == 0);
+
+   
+    cout << "Тест оператора присваивания перемещения пройден" << endl;
+}
+//Тестирование алгоритма Деикстры
 void testDijkstrasAlgorithm(){
     WeightedGraph<int>* graph = CreateGraphWithEdges();
-    int startNode = 0;
-
-    graph->dijkstrasAlgorithm(0);
    
+    vector<int> actual1 = graph->dijkstrasAlgorithm(0);
+    //ожидаемый результат
+    vector<int> expected1 = { 0,10,15,23,26,numeric_limits<int>::max() };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual1 == expected1);
+
+    WeightedGraph<int>* graph1 = CreateGraphWithEdges();
+    graph1->addEdge(1, 0, 11);
+    vector<int> actual2 = graph1->dijkstrasAlgorithm(1);
+    //ожидаемый результат
+    vector<int> expected2 = { 11,0,5,13,16,numeric_limits<int>::max() };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual2 == expected2);
+
+
+    WeightedGraph<int>* graph2 = CreateGraphWithEdges1();
+    try {
+        vector<int> actual2 = graph2->dijkstrasAlgorithm(1);
+    }
+    catch (const invalid_argument& e) {
+        // Обработка исключения
+        cout << "Ошибка: " << e.what() << endl;
+    }
+
+    WeightedGraph<int>* graph3 = CreateGraphWithEdges2();
+
+    vector<int> actual3 = graph3->dijkstrasAlgorithm(0);
+    //ожидаемый результат
+    vector<int> expected3 = { 0,2,4,3,numeric_limits<int>::max() };
+    //сравниваем ожидаемый результат с действительным
+    assert(actual3 == expected3);
+
     // Освобождение памяти, выделенной для графа
     delete graph;
+    delete graph1;
+    delete graph2;
+    delete graph3;
 }
